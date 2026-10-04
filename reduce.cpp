@@ -2,28 +2,55 @@
 
 #include <cstdlib>
 #include <iostream>
+#include <cstring>
 
 #include "get_time.h"
 
 using Type = long long;
 
 int main(int argc, char* argv[]) {
-  size_t n = 1e9;
-  int num_rounds = 3;
-	bool seq = false;
 
-  if (argc >= 2) {
-    n = atoll(argv[1]);
-  }
-  if (argc >= 3) {
-    num_rounds = atoi(argv[2]);
-  }
-	if (argc >= 4) {
-		if (atoi(argv[3]) == 1) {
+  size_t n = 0; // default 1e9
+  int num_rounds = 0; // default 3
+	bool seq = false;
+	size_t n_seq_max = 0; 
+
+	for (int argi = 1; argi < argc; argi++){
+		if (strcmp(argv[argi], "-s") == 0){
 			seq = true;
+			if (n_seq_max) {
+				fprintf(stderr, "Cannot set sequential only mode while specifying parallel execution threshold\n");
+				return 1;
+			}
+			continue;
+		}
+		if (strcmp(argv[argi], "-t") == 0){
+			if (argi == (argc - 1)) {
+				printf("Specify parallel execution input size threshold\n");	
+				return 1;
+			}
+			if (seq) {
+				fprintf(stderr, "Cannot set sequential only mode while specifying parallel execution threshold\n");
+				return 1;
+			}
+			n_seq_max = atoll(argv[argi + 1]);
+			argi += 1;
+			continue;
+		}
+		if (n == 0) {
+			n = atoll(argv[argi]);
+			continue;
+		}
+		if (num_rounds == 0){
+			num_rounds = atoi(argv[argi]);
+			continue;
 		}
 	}
 	
+  n = (n == 0) ? 1e9 : n;
+	num_rounds = (num_rounds == 0) ? 3 : num_rounds;	
+  printf("n = %ld, num_rounds = %d, n_seq_max = %ld\n", n, num_rounds, n_seq_max);	
+  return 0;	
   Type* A = (Type*)malloc(n * sizeof(Type));
   parallel_for(0, n, [&](size_t i) { A[i] = i; });
 
