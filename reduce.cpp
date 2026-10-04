@@ -49,20 +49,20 @@ int main(int argc, char* argv[]) {
 	
   n = (n == 0) ? 1e9 : n;
 	num_rounds = (num_rounds == 0) ? 3 : num_rounds;	
+	seq = (n_seq_max > n) ? true : seq;
   printf("n = %ld, num_rounds = %d, n_seq_max = %ld\n", n, num_rounds, n_seq_max);	
-  return 0;	
   Type* A = (Type*)malloc(n * sizeof(Type));
   parallel_for(0, n, [&](size_t i) { A[i] = i; });
-
 	double total_time = 0;
-	const char* mode = seq ? "(Sequential)" : "(Parallel)";
+	const char* mode = seq ? " sequential execution" : " parallel execution";
+	const char* threshold = (n_seq_max > 0 && !seq) ? " with sequential execution where n < n_seq_max" : "";
   for (int i = 0; i <= num_rounds; i++) {
     parlay::timer t;
-    long long ans = seq ? reduce_seq(A, n) : reduce(A, n);
+    long long ans = seq ? reduce_seq(A, n) : reduce(A, n, n_seq_max);
     t.stop();
 
     if (i == 0) {
-      std::cout << "Total sum " << mode << ": " << ans << std::endl;
+      std::cout << "Total sum (while using" << mode  << threshold << "): " << ans << std::endl;
       std::cout << "Warmup round running time: " << t.total_time() << std::endl;
     } else {
       std::cout << "Round " << i << " running time: " << t.total_time()
