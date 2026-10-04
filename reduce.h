@@ -16,3 +16,12 @@ T reduce(T *A, size_t n) {
     return v1 + v2;
   }
 }
+
+template <class T>
+T reduce_seq(T *A, size_t n) {
+	T total = A[0];
+	for (size_t i = 0; i < n; i++) {
+		total += A[i];
+	}
+	return total;
+}
